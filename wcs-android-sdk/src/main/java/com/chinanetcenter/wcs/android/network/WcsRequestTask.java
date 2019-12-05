@@ -21,9 +21,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -196,7 +198,7 @@ public class WcsRequestTask<T extends WcsResult> implements Callable<T> {
             }
             //User-Agent: WCS-Android-SDK-<version>-<device>-<os>(https://www.chinanetcenter.com)
             requestBuilder.header("User-Agent",
-                    String.format("WCS-Android-SDK-%s-%s-%s(%s)", Config.VERSION, android.os.Build.MODEL, android.os.Build.VERSION.RELEASE,"https://www.chinanetcenter.com"));
+                    String.format("WCS-Android-SDK-%s-%s-%s(%s)", Config.VERSION, android.os.Build.MODEL, android.os.Build.VERSION.RELEASE, "https://www.chinanetcenter.com"));
             String contentType = mParams.getHeaders().get(HttpHeaders.CONTENT_TYPE);
             switch (mParams.getMethod()) {
                 case PUT:
@@ -216,7 +218,7 @@ public class WcsRequestTask<T extends WcsResult> implements Callable<T> {
                         MultipartBody.Builder formBuilder = new MultipartBody.Builder()
                                 .setType(MultipartBody.FORM);
                         addParams(formBuilder, mParams.getParameters());
-                        RequestBody body = formBuilder.addFormDataPart("file", mParams.getName(), new ProgressRequestBody(mParams.getFile(),
+                        RequestBody body = formBuilder.addFormDataPart("file", getValueEncoded(mParams.getName()), new ProgressRequestBody(mParams.getFile(),
                                 contentType, mExecutionContext.getProgressCallback()))
                                 .build();
                         requestBuilder = requestBuilder.post(body);
@@ -315,6 +317,22 @@ public class WcsRequestTask<T extends WcsResult> implements Callable<T> {
             throw exception;
         }
 
+    }
+
+    private static String getValueEncoded(String value) {
+        if (value == null) return "null";
+        String newValue = value.replace("\n", "");
+        for (int i = 0, length = newValue.length(); i < length; i++) {
+            char c = newValue.charAt(i);
+            if (c <= '\u001f' || c >= '\u007f') {
+                try {
+                    return URLEncoder.encode(newValue, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return newValue;
     }
 
     private void dump(Exception e) {

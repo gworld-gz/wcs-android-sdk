@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -41,7 +41,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 @SuppressLint("CutPasteId")
-public class MainActivity extends ActionBarActivity implements OnClickListener {
+public class MainActivity extends AppCompatActivity implements OnClickListener {
 
 	private static final String TAG = "CNCLog";
 

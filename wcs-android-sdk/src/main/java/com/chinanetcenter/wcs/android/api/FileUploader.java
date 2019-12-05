@@ -209,8 +209,8 @@ public class FileUploader {
             uploaderListener.onFailure(new OperationMessage(-1, "token invalidate : " + token));
             return;
         }
-        if (file == null || !file.exists()) {
-            uploaderListener.onFailure(new OperationMessage(-1, "file no exists"));
+        if (file == null || !file.canRead()) {
+            uploaderListener.onFailure(new OperationMessage(-1, "file access denied."));
             return;
         }
         UploadFileRequest request = new UploadFileRequest();
@@ -248,7 +248,7 @@ public class FileUploader {
 
         //增加头部请求
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "multipart/form-data");
+        headers.put("Content-Type", "multipart/form-data; charset=utf-8");
         request.setHeaders(headers);
 
         String uploadUrlString = baseUrl + "/file/upload";
@@ -262,6 +262,63 @@ public class FileUploader {
 
         dump(context, token, uploadUrlString, file.length(), file.getName());
     }
+
+    /**
+     * 同步实现的普通上传
+     *
+     * @param context
+     * @param token
+     * @param file
+     * @param callbackBody
+     * @return
+     * @throws Exception
+     */
+//    public static UploadFileResult upload(final Context context, final String token,
+//                                          final File file,
+//                                          final HashMap<String, String> callbackBody) throws Exception {
+//        final ParamsConf conf = sParamsConf;
+//        if (null == token || token.trim().equals("")) {
+//            throw new IllegalArgumentException("token is illegal");
+//        }
+//        if (file == null || !file.canRead()) {
+//            throw new IllegalArgumentException("file access denied.");
+//        }
+//        UploadFileRequest request = new UploadFileRequest();
+//        Map<String, String> params = new HashMap<>();
+//        if (callbackBody != null) {
+//            request.setCallbackVars(callbackBody);
+//            params.putAll(callbackBody);
+//        }
+//        //表单参数
+//        params.put(FORM_TOKEN, token);
+//        params.put(FORM_FILE_DESC, file.getName());
+//        params.put(FORM_FILE, file.getName());
+//        if (conf != null) {
+//            if (!TextUtils.isEmpty(conf.mimeType)) {
+//                params.put("mimeType", conf.mimeType);
+//            }
+//            if (!TextUtils.isEmpty(conf.keyName))
+//                params.put("key", conf.keyName);
+//        }
+//        request.setParameters(params);
+//        request.setMethod(HttpMethod.POST);
+//        //文件名
+//        if (conf != null && !TextUtils.isEmpty(conf.fileName)) {
+//            request.setName(conf.fileName);
+//        } else {
+//            request.setName(file.getName());
+//        }
+//
+//        Map<String, String> headers = new HashMap<>();
+//        headers.put("Content-Type", "multipart/form-data");
+//        request.setHeaders(headers);
+//
+//        String uploadUrlString = baseUrl + "/file/upload";
+//        request.setUrl(uploadUrlString);
+//        request.setFile(file);
+//        request.setCallbackParam(params);
+//        return getInternalRequest(context).upload(request, null).getResult();
+//    }
 
     /**
      * 异步实现的分片上传
@@ -286,14 +343,14 @@ public class FileUploader {
             }
             return;
         }
-//        if (!file.canRead()) {
-//            if (null != sliceUploaderListener) {
-//                HashSet<String> hashSet = new HashSet<String>();
-//                hashSet.add(String.format(SLICE_UPLOAD_MESSAGE_FORMAT, -1, "access file denied."));
-//                sliceUploaderListener.onSliceUploadFailured(hashSet);
-//            }
-//            return;
-//        }
+        if (!file.canRead()) {
+            if (null != sliceUploaderListener) {
+                HashSet<String> hashSet = new HashSet<String>();
+                hashSet.add(String.format(SLICE_UPLOAD_MESSAGE_FORMAT, -1, "access file denied."));
+                sliceUploaderListener.onSliceUploadFailured(hashSet);
+            }
+            return;
+        }
         if (null == context || TextUtils.isEmpty(uploadToken) || TextUtils.isEmpty(getUploadScope(uploadToken))) {
             if (null != sliceUploaderListener) {
                 HashSet<String> hashSet = new HashSet<String>();
