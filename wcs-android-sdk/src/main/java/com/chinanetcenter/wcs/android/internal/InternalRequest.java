@@ -11,6 +11,7 @@ import com.chinanetcenter.wcs.android.network.WcsAsyncTask;
 import com.chinanetcenter.wcs.android.network.WcsRequest;
 import com.chinanetcenter.wcs.android.network.WcsRequestTask;
 import com.chinanetcenter.wcs.android.network.WcsResult;
+import com.chinanetcenter.wcs.android.utils.SSLSocketFactoryUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ public class InternalRequest {
             maxConcurrentRequest = ClientConfig.DEFAULT_CONCURRENT_REQUEST;
         }
         executorService = Executors.newFixedThreadPool(maxConcurrentRequest);
+        builder.sslSocketFactory(SSLSocketFactoryUtils.createSSLSocketFactory(), SSLSocketFactoryUtils.createTrustAllManager());
 
         this.innerClient = builder.build();
         requestMap = new WeakHashMap<Context, List<CancellationHandler>>();
